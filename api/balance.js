@@ -1,16 +1,19 @@
-import { MongoClient } from "mongodb";
-
-const uri = process.env.MONGO_DB_URI; // your Mongo URI
-const client = new MongoClient(uri);
+import clientPromise from "../lib/mongodb.js";
 
 export default async function handler(req, res) {
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Only GET allowed" });
+  }
+
   try {
-    await client.connect();
+    const client = await clientPromise;
     const db = client.db("mines_game");
     const balances = db.collection("balances");
 
     const userId = req.query.userId;
-    if (!userId) return res.status(400).json({ error: "Missing userId" });
+    if (!userId) {
+      return res.status(400).json({ error: "Missing userId" });
+    }
 
     const user = await balances.findOne({ userId });
 
@@ -19,8 +22,7 @@ export default async function handler(req, res) {
       balance: user ? user.balance : 0
     });
   } catch (err) {
+    console.error("Balance error:", err);
     res.status(500).json({ error: err.message });
-  } finally {
-    await client.close();
   }
-      }
+}
