@@ -11,7 +11,6 @@ export default async function handler(req, res) {
     const balances = db.collection("balances");
 
     const { userId, balance } = req.body;
-
     if (!userId || balance === undefined) {
       return res.status(400).json({ error: "Missing userId or balance" });
     }
